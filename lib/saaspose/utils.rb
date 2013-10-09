@@ -8,14 +8,21 @@ require 'json'
 module Saaspose
   class Utils
     DIGEST = OpenSSL::Digest::Digest.new('sha1')
+
     class << self
+      def path(uri)
+        if uri.is_a?(Array)
+          File.join uri.reject { |c| c.blank? }.map { |c| c.to_s }
+        else
+          uri.to_s
+        end
+      end
+
       def sign(uri, options=nil)
         options = options ? options.dup : {}
         options.merge!(:appSID => Configuration.app_sid)
 
-        uri = File.join(uri.reject { |c| c.blank? }.map { |c| c.to_s }) if uri.is_a?(Array)
-        url = "#{Configuration.product_uri}#{uri}"
-
+        url = "#{Configuration.product_uri}#{path(uri)}"
         url << "?" << options.map{|key, value| "#{key}=#{CGI::escape(value.to_s)}"}.join("&")
 
         signature = OpenSSL::HMAC.digest(DIGEST, Configuration.app_key, url)
@@ -39,8 +46,8 @@ module Saaspose
         JSON.parse(response.body)
       end
 
-      def call_and_save(uri, options, file)
-        response   = response = call(uri, options)
+      def call_and_save(uri, options=nil, file)
+        response = response = call(uri, options)
         Utils.save_file(response, file)
       end
 
@@ -51,6 +58,7 @@ module Saaspose
       def log(severity, message)
         Configuration.logger.send(severity, message) if Configuration.logger
       end
+
     end
   end
 end

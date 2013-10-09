@@ -10,19 +10,20 @@ module Saaspose
     DIGEST = OpenSSL::Digest::Digest.new('sha1')
 
     class << self
-      def path(uri)
-        if uri.is_a?(Array)
-          File.join uri.reject { |c| c.blank? }.map { |c| c.to_s }
+      def path(file_path)
+        if file_path.is_a?(Array)
+          File.join file_path.reject { |c| c.blank? }.map { |c| c.to_s }
         else
-          uri.to_s
+          file_path.to_s
         end
       end
 
-      def sign(uri, options=nil)
+      def sign(file_path, options=nil)
         options = options ? options.dup : {}
         options.merge!(:appSID => Configuration.app_sid)
 
-        url = "#{Configuration.product_uri}#{path(uri)}"
+        url = path file_path
+        url = "#{Configuration.product_uri}#{url}"
         url << "?" << options.map{|key, value| "#{key}=#{CGI::escape(value.to_s)}"}.join("&")
 
         signature = OpenSSL::HMAC.digest(DIGEST, Configuration.app_key, url)

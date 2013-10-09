@@ -12,6 +12,8 @@ module Saaspose
       def sign(uri, options=nil)
         options = options ? options.dup : {}
         options.merge!(:appSID => Configuration.app_sid)
+
+        uri = File.join(uri.reject { |c| c.blank? }.map { |c| c.to_s }) if uri.is_a?(Array)
         url = "#{Configuration.product_uri}#{uri}"
 
         url << "?" << options.map{|key, value| "#{key}=#{CGI::escape(value.to_s)}"}.join("&")

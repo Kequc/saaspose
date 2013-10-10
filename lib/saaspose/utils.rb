@@ -47,13 +47,14 @@ module Saaspose
         JSON.parse(response.body)
       end
 
-      def call_and_save(uri, options=nil, file)
-        response = response = call(uri, options)
-        Utils.save_file(response, file)
+      def call_and_save(uri, options=nil, file=nil)
+        stream = call(uri, options).body
+        Utils.save_file(stream, file) if file
+        stream
       end
 
       def save_file(response_stream, local_file)
-        File.open(local_file, "wb") { |file| file.write(response_stream.body) }
+        File.open(local_file, "wb") { |file| file.write(response_stream) }
       end
 
       def log(severity, message)

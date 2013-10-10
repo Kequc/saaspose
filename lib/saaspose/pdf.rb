@@ -2,22 +2,23 @@ module Saaspose
   class Pdf
 
     class << self
-      def convert_page(file_name, local_file, page_number, *folder_path, **options)
-        options = { format: :png, height: 800, width: 600 } if options.empty?
-        options[:folder] = Utils.path folder_path
-        path = ["pdf", file_name, "pages", page_number]
-        Utils.call_and_save path, options, local_file
+      def convert_page(file_name, *folder_path, **options)
+        options[:folder] = Utils.path(folder_path) unless folder_path.empty?
+        local = options.delete :local
+        page = options.delete(:page) || 1
+        path = ["pdf", file_name, "pages", page]
+        Utils.call_and_save path, options, local
       end
 
-      def convert(file_name, local_file, *folder_path, **options)
-        options = { format: :doc } if options.empty?
-        options[:folder] = Utils.path folder_path
+      def convert(file_name, *folder_path, **options)
+        options[:folder] = Utils.path(folder_path) unless folder_path.empty?
+        local = options.delete :local
         path = ["pdf", file_name]
-        Utils.call_and_save path, options, local_file
+        Utils.call_and_save path, options, local
       end
 
       def pages_count(file_name, *folder_path, **options)
-        options[:folder] = Utils.path folder_path
+        options[:folder] = Utils.path(folder_path) unless folder_path.empty?
         path = ["pdf", file_name, "pages"]
         Utils.call_and_parse(path, options)["Pages"]["List"].length
       end
